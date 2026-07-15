@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { useFeedbackAgent } from "@/lib/useFeedbackAgent";
 import { useSettings } from "@/lib/useSettings";
-import { useModelCatalog } from "@/lib/useModelCatalog";
+import { getModel, DEFAULT_MODEL_ID } from "@/lib/models";
 import { TranscriptPanel } from "@/components/TranscriptPanel";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
@@ -12,7 +12,6 @@ import styles from "./page.module.css";
 
 export default function Home() {
   const { settings, setSettings, loaded } = useSettings();
-  const { models, loading: modelsLoading } = useModelCatalog();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const speech = useSpeechRecognition({ lang: settings.lang });
@@ -24,17 +23,17 @@ export default function Home() {
     transcript: speech.finalText,
   });
 
-  // OpenRouter's free-model lineup changes over time; if the saved model id
-  // is missing from the live catalog (first run, or the model was retired),
-  // switch to a currently available one instead of silently 404ing later.
+  // A previously saved model id can go missing from the curated list (e.g.
+  // after an app update). Fall back to the default instead of breaking.
   useEffect(() => {
-    if (!loaded || modelsLoading || models.length === 0) return;
-    if (models.some((m) => m.id === settings.model)) return;
-    const preferred = models.find((m) => m.free) ?? models[0];
-    setSettings((prev) => (prev.model === preferred.id ? prev : { ...prev, model: preferred.id }));
-  }, [loaded, modelsLoading, models, settings.model, setSettings]);
+    if (!loaded || getModel(settings.model)) return;
+    setSettings((prev) => (prev.model === DEFAULT_MODEL_ID ? prev : { ...prev, model: DEFAULT_MODEL_ID }));
+  }, [loaded, settings.model, setSettings]);
 
   if (!loaded) return null;
+
+  const selectedModel = getModel(settings.model);
+  const keyMissing = Boolean(selectedModel?.requiresKey) && settings.apiKey.length === 0;
 
   return (
     <div className={styles.page}>
@@ -86,7 +85,7 @@ export default function Home() {
         />
         <FeedbackPanel
           enabled={settings.agentEnabled}
-          hasApiKey={settings.apiKey.length > 0}
+          keyMissing={keyMissing}
           suggestions={feedback.suggestions}
           analyzing={feedback.analyzing}
           error={feedback.error}
@@ -94,13 +93,7 @@ export default function Home() {
       </div>
 
       {settingsOpen && (
-        <SettingsPanel
-          settings={settings}
-          onChange={setSettings}
-          onClose={() => setSettingsOpen(false)}
-          models={models}
-          modelsLoading={modelsLoading}
-        />
+        <SettingsPanel settings={settings} onChange={setSettings} onClose={() => setSettingsOpen(false)} />
       )}
     </div>
   );

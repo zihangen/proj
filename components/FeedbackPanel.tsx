@@ -5,7 +5,7 @@ import styles from "./FeedbackPanel.module.css";
 
 interface FeedbackPanelProps {
   enabled: boolean;
-  hasApiKey: boolean;
+  keyMissing: boolean;
   suggestions: Suggestion[];
   analyzing: boolean;
   error: string | null;
@@ -13,7 +13,7 @@ interface FeedbackPanelProps {
 
 export function FeedbackPanel({
   enabled,
-  hasApiKey,
+  keyMissing,
   suggestions,
   analyzing,
   error,
@@ -27,11 +27,11 @@ export function FeedbackPanel({
 
       {!enabled && <p className={styles.empty}>在设置中开启“表达反馈”后，会在你停顿时给出建议。</p>}
 
-      {enabled && !hasApiKey && (
-        <p className={styles.empty}>需要先在设置里填写 OpenRouter API Key（免费模型也需要一个 Key）。</p>
+      {enabled && keyMissing && (
+        <p className={styles.empty}>你选的这个模型是付费的，需要先在设置里填写你自己的 OpenRouter API Key。</p>
       )}
 
-      {enabled && hasApiKey && (
+      {enabled && !keyMissing && (
         <>
           {error && <p className={styles.error}>{error}</p>}
           {suggestions.length === 0 && !error && (

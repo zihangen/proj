@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { SpeechLang } from "./useSpeechRecognition";
+import { DEFAULT_MODEL_ID } from "./models";
 
 const STORAGE_KEY = "speech-coach-settings-v1";
 
@@ -16,10 +17,7 @@ const DEFAULT_SETTINGS: Settings = {
   lang: "zh-CN",
   agentEnabled: false,
   apiKey: "",
-  // Left blank on purpose: OpenRouter's free-model lineup changes over time,
-  // so a hardcoded slug goes stale. useModelCatalog fills this in once the
-  // live model list has loaded.
-  model: "",
+  model: DEFAULT_MODEL_ID,
 };
 
 export function useSettings() {
