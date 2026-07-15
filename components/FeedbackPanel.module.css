@@ -1,0 +1,75 @@
+.panel {
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow-y: auto;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.analyzing {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+}
+
+.empty {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: 6px;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.card {
+  border-left: 3px solid var(--flag);
+  background: var(--flag-soft);
+  border-radius: 0 6px 6px 0;
+  padding: 0.65rem 0.8rem;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--flag);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.note {
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.45;
+}
