@@ -38,10 +38,10 @@ export async function POST(request: Request) {
       );
     }
   } else {
-    key = process.env.OPENROUTER_API_KEY;
+    key = process.env.OPENROUTER_API_KEY?.trim();
     if (!key) {
       return NextResponse.json(
-        { error: "网站还没配置免费模型的 API Key（缺少 OPENROUTER_API_KEY 环境变量）" },
+        { error: "网站还没配置免费模型的 API Key（OPENROUTER_API_KEY 环境变量缺失或是空的）" },
         { status: 500 }
       );
     }
@@ -66,6 +66,12 @@ export async function POST(request: Request) {
 
   if (!upstream.ok) {
     const text = await upstream.text().catch(() => "");
+    if (upstream.status === 401) {
+      const hint = model.requiresKey
+        ? "你在设置里填的 OpenRouter API Key 好像不对，检查一下有没有多余的空格或复制错了。"
+        : "网站配置的 OPENROUTER_API_KEY 好像不对，去 Vercel 的环境变量里检查一下有没有多余的空格/换行。";
+      return NextResponse.json({ error: `${hint}（OpenRouter: ${text.slice(0, 200)}）` }, { status: 502 });
+    }
     return NextResponse.json(
       { error: `OpenRouter ${upstream.status}: ${text.slice(0, 300)}` },
       { status: 502 }
