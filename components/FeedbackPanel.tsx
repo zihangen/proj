@@ -25,7 +25,7 @@ export function FeedbackPanel({
         {analyzing && <span className={styles.analyzing}>分析中…</span>}
       </div>
 
-      {!enabled && <p className={styles.empty}>在设置中开启“表达反馈”后，会在你停顿时给出建议。</p>}
+      {!enabled && <p className={styles.empty}>勾选顶部的“表达反馈”后，会在你停顿时给出建议。</p>}
 
       {enabled && keyMissing && (
         <p className={styles.empty}>你选的这个模型是付费的，需要先在设置里填写你自己的 OpenRouter API Key。</p>

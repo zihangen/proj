@@ -15,7 +15,7 @@ export interface Settings {
 
 const DEFAULT_SETTINGS: Settings = {
   lang: "zh-CN",
-  agentEnabled: false,
+  agentEnabled: true,
   apiKey: "",
   model: DEFAULT_MODEL_ID,
 };

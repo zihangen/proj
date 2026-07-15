@@ -5,9 +5,9 @@ import { analyzeTranscript, AnalyzeError } from "./openrouter";
 import { resultToSuggestions, type Suggestion } from "./feedback";
 import { getModel } from "./models";
 
-const SILENCE_MS = 1500;
-const MIN_NEW_CHARS = 12;
-const ANALYSIS_WINDOW_CHARS = 800;
+const SILENCE_MS = 900;
+const MIN_NEW_CHARS = 8;
+const ANALYSIS_WINDOW_CHARS = 600;
 const MAX_SUGGESTIONS = 20;
 
 interface UseFeedbackAgentOptions {
