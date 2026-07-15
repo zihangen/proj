@@ -64,7 +64,7 @@ export function useFeedbackAgent({
   }, [apiKey, model, transcript]);
 
   useEffect(() => {
-    if (!enabled || !apiKey || transcript.length === 0) return;
+    if (!enabled || !apiKey || !model || transcript.length === 0) return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -74,7 +74,7 @@ export function useFeedbackAgent({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [transcript, enabled, apiKey, runAnalysis]);
+  }, [transcript, enabled, apiKey, model, runAnalysis]);
 
   const clear = useCallback(() => {
     setSuggestions([]);
