@@ -1,24 +1,18 @@
 "use client";
 
 import type { Settings } from "@/lib/useSettings";
-import type { OpenRouterModel } from "@/lib/openrouter";
+import { CURATED_MODELS, getModel } from "@/lib/models";
 import styles from "./SettingsPanel.module.css";
 
 interface SettingsPanelProps {
   settings: Settings;
   onChange: (settings: Settings) => void;
   onClose: () => void;
-  models: OpenRouterModel[];
-  modelsLoading: boolean;
 }
 
-export function SettingsPanel({
-  settings,
-  onChange,
-  onClose,
-  models,
-  modelsLoading,
-}: SettingsPanelProps) {
+export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProps) {
+  const selectedModel = getModel(settings.model);
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
@@ -51,41 +45,41 @@ export function SettingsPanel({
         </label>
 
         <label className={styles.field}>
-          <span className={styles.fieldLabel}>OpenRouter API Key</span>
-          <input
-            className={styles.input}
-            type="password"
-            placeholder="sk-or-v1-..."
-            value={settings.apiKey}
-            onChange={(e) => onChange({ ...settings, apiKey: e.target.value })}
-            autoComplete="off"
-          />
-          <span className={styles.hint}>
-            只保存在你的浏览器本地。前往{" "}
-            <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">
-              openrouter.ai/keys
-            </a>{" "}
-            免费注册获取（可用免费模型，也可绑定自己的付费额度）。
-          </span>
-        </label>
-
-        <label className={styles.field}>
-          <span className={styles.fieldLabel}>模型{modelsLoading && "（加载中…）"}</span>
+          <span className={styles.fieldLabel}>模型</span>
           <select
             className={styles.select}
             value={settings.model}
             onChange={(e) => onChange({ ...settings, model: e.target.value })}
           >
-            {models.length === 0 && <option value="">加载中…</option>}
-            {models.map((m) => (
+            {CURATED_MODELS.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.free ? "🆓 " : "💳 "}
-                {m.name}
+                {m.label}
               </option>
             ))}
           </select>
-          <span className={styles.hint}>免费模型的名单会不定期变动，这里始终显示 OpenRouter 当前实际可用的模型。</span>
         </label>
+
+        {selectedModel?.requiresKey && (
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>OpenRouter API Key</span>
+            <input
+              className={styles.input}
+              type="password"
+              placeholder="sk-or-v1-..."
+              value={settings.apiKey}
+              onChange={(e) => onChange({ ...settings, apiKey: e.target.value })}
+              autoComplete="off"
+            />
+            <span className={styles.hint}>
+              只保存在你的浏览器本地。前往{" "}
+              <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">
+                openrouter.ai/keys
+              </a>{" "}
+              获取你自己的 Key（这个模型是付费的，费用记在你自己的账户上）。
+            </span>
+          </label>
+        )}
       </div>
     </div>
   );

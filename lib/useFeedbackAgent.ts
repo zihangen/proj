@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { analyzeTranscript, OpenRouterError } from "./openrouter";
+import { analyzeTranscript, AnalyzeError } from "./openrouter";
 import { resultToSuggestions, type Suggestion } from "./feedback";
+import { getModel } from "./models";
 
 const SILENCE_MS = 1500;
 const MIN_NEW_CHARS = 12;
@@ -48,7 +49,7 @@ export function useFeedbackAgent({
     setAnalyzing(true);
     setError(null);
     try {
-      const result = await analyzeTranscript(apiKey, model, chunk);
+      const result = await analyzeTranscript(model, apiKey, chunk);
       lastAnalyzedLengthRef.current = newLength;
       const fresh = resultToSuggestions(result);
       if (fresh.length > 0) {
@@ -56,7 +57,7 @@ export function useFeedbackAgent({
       }
     } catch (err) {
       lastAnalyzedLengthRef.current = newLength;
-      setError(err instanceof OpenRouterError ? err.message : "分析请求失败，请检查网络或 API Key");
+      setError(err instanceof AnalyzeError ? err.message : "分析请求失败，请检查网络");
     } finally {
       inFlightRef.current = false;
       setAnalyzing(false);
@@ -64,7 +65,8 @@ export function useFeedbackAgent({
   }, [apiKey, model, transcript]);
 
   useEffect(() => {
-    if (!enabled || !apiKey || !model || transcript.length === 0) return;
+    if (!enabled || !model || transcript.length === 0) return;
+    if (getModel(model)?.requiresKey && !apiKey) return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
