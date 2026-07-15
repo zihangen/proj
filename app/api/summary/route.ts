@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
-import { FEEDBACK_SYSTEM_PROMPT, parseFeedbackResult } from "@/lib/feedback";
+import { SUMMARY_SYSTEM_PROMPT, parseSummaryResult } from "@/lib/summary";
 import { getModel } from "@/lib/models";
 import { resolveApiKey, is401Error } from "@/lib/server/resolveApiKey";
 
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
+// Keep the tail of very long sessions rather than sending unbounded text.
+const MAX_TRANSCRIPT_CHARS = 12000;
 
-interface AnalyzeRequestBody {
+interface SummaryRequestBody {
   modelId?: string;
   transcript?: string;
   apiKey?: string;
@@ -13,7 +15,7 @@ interface AnalyzeRequestBody {
 }
 
 export async function POST(request: Request) {
-  let body: AnalyzeRequestBody;
+  let body: SummaryRequestBody;
   try {
     body = await request.json();
   } catch {
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
   }
 
   const { modelId, transcript, apiKey, context } = body;
-  if (!modelId || !transcript) {
+  if (!modelId || !transcript?.trim()) {
     return NextResponse.json({ error: "缺少 modelId 或 transcript" }, { status: 400 });
   }
 
@@ -35,11 +37,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: resolved.error }, { status: resolved.status });
   }
 
-  const messages = [{ role: "system", content: FEEDBACK_SYSTEM_PROMPT }];
+  const messages = [{ role: "system", content: SUMMARY_SYSTEM_PROMPT }];
   if (context?.trim()) {
     messages.push({ role: "system", content: `讲话背景（用户提供）：\n${context.trim()}` });
   }
-  messages.push({ role: "user", content: transcript });
+  messages.push({ role: "user", content: transcript.trim().slice(-MAX_TRANSCRIPT_CHARS) });
 
   const upstream = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
     method: "POST",
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
       "Content-Type": "application/json",
       "X-Title": "Speech Coach",
     },
-    body: JSON.stringify({ model: modelId, messages, temperature: 0.2 }),
+    body: JSON.stringify({ model: modelId, messages, temperature: 0.3 }),
   });
 
   if (!upstream.ok) {
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "模型没有返回内容" }, { status: 502 });
   }
 
-  const parsed = parseFeedbackResult(content);
+  const parsed = parseSummaryResult(content);
   if (!parsed) {
     return NextResponse.json({ error: "模型返回的内容不是预期的 JSON 格式" }, { status: 502 });
   }

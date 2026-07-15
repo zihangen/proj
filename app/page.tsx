@@ -3,16 +3,20 @@
 import { useEffect, useState } from "react";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { useFeedbackAgent } from "@/lib/useFeedbackAgent";
+import { useSessionSummary } from "@/lib/useSessionSummary";
 import { useSettings } from "@/lib/useSettings";
 import { getModel, DEFAULT_MODEL_ID } from "@/lib/models";
 import { TranscriptPanel } from "@/components/TranscriptPanel";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
+import { ContextPanel } from "@/components/ContextPanel";
+import { SummaryPanel } from "@/components/SummaryPanel";
 import styles from "./page.module.css";
 
 export default function Home() {
   const { settings, setSettings, loaded } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   const speech = useSpeechRecognition({ lang: settings.lang });
 
@@ -21,7 +25,10 @@ export default function Home() {
     apiKey: settings.apiKey,
     model: settings.model,
     transcript: speech.finalText,
+    context: settings.context,
   });
+
+  const summary = useSessionSummary();
 
   // A previously saved model id can go missing from the curated list (e.g.
   // after an app update). Fall back to the default instead of breaking.
@@ -34,6 +41,12 @@ export default function Home() {
 
   const selectedModel = getModel(settings.model);
   const keyMissing = Boolean(selectedModel?.requiresKey) && settings.apiKey.length === 0;
+
+  const handleFinish = () => {
+    if (speech.listening) speech.stop();
+    setSummaryOpen(true);
+    void summary.run(settings.model, settings.apiKey, speech.finalText, settings.context);
+  };
 
   return (
     <div className={styles.page}>
@@ -58,10 +71,18 @@ export default function Home() {
             {speech.listening ? "● 停止" : "○ 开始"}
           </button>
           <button
+            className={styles.finishButton}
+            onClick={handleFinish}
+            disabled={!speech.finalText.trim() || keyMissing}
+          >
+            ✓ 结束
+          </button>
+          <button
             className={styles.iconButton}
             onClick={() => {
               speech.clear();
               feedback.clear();
+              summary.clear();
             }}
           >
             清空
@@ -100,8 +121,24 @@ export default function Home() {
         />
       </div>
 
+      <ContextPanel
+        value={settings.context}
+        onChange={(context) => setSettings({ ...settings, context })}
+        lang={settings.lang}
+        dictationDisabled={speech.listening}
+      />
+
       {settingsOpen && (
         <SettingsPanel settings={settings} onChange={setSettings} onClose={() => setSettingsOpen(false)} />
+      )}
+
+      {summaryOpen && (
+        <SummaryPanel
+          result={summary.result}
+          loading={summary.loading}
+          error={summary.error}
+          onClose={() => setSummaryOpen(false)}
+        />
       )}
     </div>
   );

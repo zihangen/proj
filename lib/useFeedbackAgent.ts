@@ -5,16 +5,19 @@ import { analyzeTranscript, AnalyzeError } from "./openrouter";
 import { resultToSuggestions, type Suggestion } from "./feedback";
 import { getModel } from "./models";
 
-const SILENCE_MS = 900;
-const MIN_NEW_CHARS = 8;
+// Short enough to fire once per natural sentence-ending pause, without
+// misfiring on the small pauses that happen mid-sentence.
+const SILENCE_MS = 600;
+const MIN_NEW_CHARS = 6;
 const ANALYSIS_WINDOW_CHARS = 600;
-const MAX_SUGGESTIONS = 20;
+const MAX_SUGGESTIONS = 30;
 
 interface UseFeedbackAgentOptions {
   enabled: boolean;
   apiKey: string;
   model: string;
   transcript: string;
+  context: string;
 }
 
 interface UseFeedbackAgentResult {
@@ -29,6 +32,7 @@ export function useFeedbackAgent({
   apiKey,
   model,
   transcript,
+  context,
 }: UseFeedbackAgentOptions): UseFeedbackAgentResult {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -37,6 +41,11 @@ export function useFeedbackAgent({
   const lastAnalyzedLengthRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlightRef = useRef(false);
+  const contextRef = useRef(context);
+
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
 
   const runAnalysis = useCallback(async () => {
     if (inFlightRef.current) return;
@@ -49,7 +58,7 @@ export function useFeedbackAgent({
     setAnalyzing(true);
     setError(null);
     try {
-      const result = await analyzeTranscript(model, apiKey, chunk);
+      const result = await analyzeTranscript(model, apiKey, chunk, contextRef.current);
       lastAnalyzedLengthRef.current = newLength;
       const fresh = resultToSuggestions(result);
       if (fresh.length > 0) {
