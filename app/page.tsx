@@ -66,6 +66,14 @@ export default function Home() {
           >
             清空
           </button>
+          <label className={styles.agentToggle}>
+            <input
+              type="checkbox"
+              checked={settings.agentEnabled}
+              onChange={(e) => setSettings({ ...settings, agentEnabled: e.target.checked })}
+            />
+            <span>表达反馈</span>
+          </label>
           <button className={styles.iconButton} onClick={() => setSettingsOpen(true)}>
             设置
           </button>

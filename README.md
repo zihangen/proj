@@ -5,8 +5,9 @@
 ## 功能
 
 - 浏览器实时语音识别，大字字幕显示，支持中文和英语（US）切换
-- 停顿时自动触发 AI 分析，对铺垫过长、车轱辘话、缺少结论、逻辑跳跃给出简短建议
-- 4 个可选模型：2 个免费（DeepSeek、Llama），访客不需要任何 API Key；2 个付费（DeepSeek、OpenAI GPT-4.1 mini），需要访客自己在设置里填 OpenRouter Key
+- 停顿约 0.9 秒后自动触发 AI 分析，反馈维度基于 MIT 教授 Patrick Winston 经典课程《How to Speak》的方法论（参考开源 Claude skill：[xeichelberger/how-to-speak-](https://github.com/xeichelberger/how-to-speak-)）：开场承诺、路标语、重复质量、记忆点、收尾交代
+- 表达反馈默认开启，主页面顶部有一个打钩框可以随时关闭
+- 4 个可选模型：2 个免费（OpenAI gpt-oss-20b、Google Gemma 4），访客不需要任何 API Key；2 个付费（DeepSeek、OpenAI GPT-4.1 mini），需要访客自己在设置里填 OpenRouter Key
 - 付费模型的 Key 只保存在访客浏览器本地，直接从浏览器发往 OpenRouter，不经过你的服务器
 
 ## 本地运行
@@ -40,8 +41,8 @@ OPENROUTER_API_KEY=sk-or-v1-你自己的key
 ## 使用说明
 
 1. 打开网页，选择识别语言，点击"开始"并允许麦克风权限
-2. 点"设置"，选一个模型：标 🆓 的免费模型直接能用；标 💳 的付费模型需要先填入你自己的 OpenRouter API Key（[免费注册](https://openrouter.ai/keys)）
-3. 勾选"开启表达反馈"，说话时字幕会实时显示；每次停顿超过约 1.5 秒，右侧"表达建议"栏会给出反馈
+2. 顶部"表达反馈"打钩框默认是开的；如果想换模型或用付费模型，点"设置"——标 🆓 的免费模型直接能用，标 💳 的付费模型需要先填入你自己的 OpenRouter API Key（[免费注册](https://openrouter.ai/keys)）
+3. 说话时字幕会实时显示；每次停顿超过约 0.9 秒，右侧"表达建议"栏会给出基于 Winston 框架的反馈
 
 ## 技术栈
 

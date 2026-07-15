@@ -67,6 +67,20 @@
   color: var(--ink);
 }
 
+.agentToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-raised);
+}
+
 .body {
   flex: 1;
   display: grid;

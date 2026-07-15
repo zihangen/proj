@@ -35,15 +35,6 @@ export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProp
           </select>
         </label>
 
-        <label className={styles.toggleField}>
-          <input
-            type="checkbox"
-            checked={settings.agentEnabled}
-            onChange={(e) => onChange({ ...settings, agentEnabled: e.target.checked })}
-          />
-          <span>开启表达反馈</span>
-        </label>
-
         <label className={styles.field}>
           <span className={styles.fieldLabel}>模型</span>
           <select
