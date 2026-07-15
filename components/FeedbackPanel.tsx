@@ -1,0 +1,52 @@
+"use client";
+
+import { DIMENSION_LABELS, type Suggestion } from "@/lib/feedback";
+import styles from "./FeedbackPanel.module.css";
+
+interface FeedbackPanelProps {
+  enabled: boolean;
+  hasApiKey: boolean;
+  suggestions: Suggestion[];
+  analyzing: boolean;
+  error: string | null;
+}
+
+export function FeedbackPanel({
+  enabled,
+  hasApiKey,
+  suggestions,
+  analyzing,
+  error,
+}: FeedbackPanelProps) {
+  return (
+    <div className={styles.panel}>
+      <div className={styles.head}>
+        <span className={styles.title}>表达建议</span>
+        {analyzing && <span className={styles.analyzing}>分析中…</span>}
+      </div>
+
+      {!enabled && <p className={styles.empty}>在设置中开启“表达反馈”后，会在你停顿时给出建议。</p>}
+
+      {enabled && !hasApiKey && (
+        <p className={styles.empty}>需要先在设置里填写 OpenRouter API Key（免费模型也需要一个 Key）。</p>
+      )}
+
+      {enabled && hasApiKey && (
+        <>
+          {error && <p className={styles.error}>{error}</p>}
+          {suggestions.length === 0 && !error && (
+            <p className={styles.empty}>开始说话，停顿时会在这里出现建议。</p>
+          )}
+          <ul className={styles.list}>
+            {suggestions.map((s) => (
+              <li key={s.id} className={styles.card}>
+                <span className={styles.label}>{DIMENSION_LABELS[s.dimension]}</span>
+                <p className={styles.note}>{s.note}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
