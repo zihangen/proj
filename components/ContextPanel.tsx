@@ -22,6 +22,11 @@ export function ContextPanel({ value, onChange, lang, dictationDisabled }: Conte
     },
   });
 
+  const confirm = () => {
+    if (dictation.listening) dictation.stop();
+    setCollapsed(true);
+  };
+
   return (
     <div className={`${styles.panel} ${collapsed ? styles.collapsed : ""}`}>
       <button
@@ -46,6 +51,14 @@ export function ContextPanel({ value, onChange, lang, dictationDisabled }: Conte
             onChange={(e) => onChange(e.target.value)}
             rows={4}
           />
+          {dictation.listening && (
+            <p className={styles.interim}>
+              {dictation.interimText ? dictation.interimText : "正在听…说完停顿一下会自动加进去"}
+            </p>
+          )}
+          {dictation.error && dictation.error !== "unsupported" && (
+            <p className={styles.dictationError}>语音输入出错：{dictation.error}</p>
+          )}
           <div className={styles.actions}>
             {dictation.supported && (
               <button
@@ -63,6 +76,9 @@ export function ContextPanel({ value, onChange, lang, dictationDisabled }: Conte
                 清空
               </button>
             )}
+            <button type="button" className={styles.confirmButton} onClick={confirm}>
+              ✓ 确认
+            </button>
           </div>
         </div>
       )}

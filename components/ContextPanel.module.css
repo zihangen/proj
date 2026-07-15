@@ -97,3 +97,34 @@
 .clearButton:hover {
   color: var(--ink);
 }
+
+.confirmButton {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.confirmButton:hover {
+  opacity: 0.85;
+}
+
+.interim {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dictationError {
+  font-size: 0.76rem;
+  color: var(--danger);
+  margin: 0;
+  line-height: 1.4;
+}

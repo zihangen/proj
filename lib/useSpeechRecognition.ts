@@ -166,7 +166,11 @@ export function useSpeechRecognition({
   const stop = useCallback(() => {
     shouldListenRef.current = false;
     pendingLangRestartGenRef.current = null;
-    recognitionRef.current?.abort();
+    // stop() (not abort()) lets the recognizer flush whatever audio it has
+    // already buffered as a final result instead of discarding it — abort()
+    // here was silently dropping the last thing the user said before they
+    // clicked stop.
+    recognitionRef.current?.stop();
     recognitionRef.current = null;
     setListening(false);
     setInterimText("");
