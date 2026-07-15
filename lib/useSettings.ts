@@ -11,6 +11,7 @@ export interface Settings {
   agentEnabled: boolean;
   apiKey: string;
   model: string;
+  context: string;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -18,6 +19,7 @@ const DEFAULT_SETTINGS: Settings = {
   agentEnabled: true,
   apiKey: "",
   model: DEFAULT_MODEL_ID,
+  context: "",
 };
 
 export function useSettings() {
