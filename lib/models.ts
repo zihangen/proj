@@ -5,20 +5,23 @@ export interface CuratedModel {
   requiresKey: boolean;
 }
 
-// OpenRouter's free-tier lineup changes over time — this app already hit a
-// retired slug once (deepseek-r1:free -> 404, "use deepseek/deepseek-r1
-// instead"). If one of the two free entries below starts 404ing, swap the
-// id for a current one from https://openrouter.ai/models?max_price=0.
+// OpenRouter's free-tier lineup changes over time and models get retired
+// with only a few days' notice (check the "Going away <date>" flag on
+// https://openrouter.ai/models?max_price=0 before picking one). This app
+// has already hit two retirements: deepseek-r1:free (404, paid-only now)
+// and llama-3.3-70b-instruct:free (flagged "Going away July 19, 2026").
+// DeepSeek currently has no free models on OpenRouter at all, so both free
+// slots below come from other vendors; DeepSeek stays in the paid slot.
 export const CURATED_MODELS: CuratedModel[] = [
   {
-    id: "deepseek/deepseek-chat-v3.1:free",
-    label: "DeepSeek（免费，无需 Key）",
+    id: "openai/gpt-oss-20b:free",
+    label: "OpenAI gpt-oss-20b（免费，无需 Key）",
     free: true,
     requiresKey: false,
   },
   {
-    id: "meta-llama/llama-3.3-70b-instruct:free",
-    label: "Llama 3.3 70B（免费，无需 Key）",
+    id: "google/gemma-4-26b-a4b-it:free",
+    label: "Google Gemma 4 26B（免费，无需 Key）",
     free: true,
     requiresKey: false,
   },
