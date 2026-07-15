@@ -1,31 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { Settings } from "@/lib/useSettings";
-import { fetchOpenRouterModels, FALLBACK_FREE_MODELS, type OpenRouterModel } from "@/lib/openrouter";
+import type { OpenRouterModel } from "@/lib/openrouter";
 import styles from "./SettingsPanel.module.css";
 
 interface SettingsPanelProps {
   settings: Settings;
   onChange: (settings: Settings) => void;
   onClose: () => void;
+  models: OpenRouterModel[];
+  modelsLoading: boolean;
 }
 
-export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProps) {
-  const [models, setModels] = useState<OpenRouterModel[]>(FALLBACK_FREE_MODELS);
-  const [modelsLoading, setModelsLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchOpenRouterModels().then((list) => {
-      if (!cancelled && list.length > 0) setModels(list);
-      if (!cancelled) setModelsLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+export function SettingsPanel({
+  settings,
+  onChange,
+  onClose,
+  models,
+  modelsLoading,
+}: SettingsPanelProps) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
@@ -83,6 +76,7 @@ export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProp
             value={settings.model}
             onChange={(e) => onChange({ ...settings, model: e.target.value })}
           >
+            {models.length === 0 && <option value="">加载中…</option>}
             {models.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.free ? "🆓 " : "💳 "}
@@ -90,6 +84,7 @@ export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProp
               </option>
             ))}
           </select>
+          <span className={styles.hint}>免费模型的名单会不定期变动，这里始终显示 OpenRouter 当前实际可用的模型。</span>
         </label>
       </div>
     </div>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { useFeedbackAgent } from "@/lib/useFeedbackAgent";
 import { useSettings } from "@/lib/useSettings";
+import { useModelCatalog } from "@/lib/useModelCatalog";
 import { TranscriptPanel } from "@/components/TranscriptPanel";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
@@ -11,6 +12,7 @@ import styles from "./page.module.css";
 
 export default function Home() {
   const { settings, setSettings, loaded } = useSettings();
+  const { models, loading: modelsLoading } = useModelCatalog();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const speech = useSpeechRecognition({ lang: settings.lang });
@@ -21,6 +23,16 @@ export default function Home() {
     model: settings.model,
     transcript: speech.finalText,
   });
+
+  // OpenRouter's free-model lineup changes over time; if the saved model id
+  // is missing from the live catalog (first run, or the model was retired),
+  // switch to a currently available one instead of silently 404ing later.
+  useEffect(() => {
+    if (!loaded || modelsLoading || models.length === 0) return;
+    if (models.some((m) => m.id === settings.model)) return;
+    const preferred = models.find((m) => m.free) ?? models[0];
+    setSettings((prev) => (prev.model === preferred.id ? prev : { ...prev, model: preferred.id }));
+  }, [loaded, modelsLoading, models, settings.model, setSettings]);
 
   if (!loaded) return null;
 
@@ -86,6 +98,8 @@ export default function Home() {
           settings={settings}
           onChange={setSettings}
           onClose={() => setSettingsOpen(false)}
+          models={models}
+          modelsLoading={modelsLoading}
         />
       )}
     </div>

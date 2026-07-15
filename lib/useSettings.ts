@@ -16,7 +16,10 @@ const DEFAULT_SETTINGS: Settings = {
   lang: "zh-CN",
   agentEnabled: false,
   apiKey: "",
-  model: "deepseek/deepseek-r1:free",
+  // Left blank on purpose: OpenRouter's free-model lineup changes over time,
+  // so a hardcoded slug goes stale. useModelCatalog fills this in once the
+  // live model list has loaded.
+  model: "",
 };
 
 export function useSettings() {
