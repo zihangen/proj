@@ -73,3 +73,20 @@
   color: var(--ink);
   line-height: 1.45;
 }
+
+.cardOverall {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 6px 6px 0;
+  padding: 0.65rem 0.8rem;
+}
+
+.labelOverall {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.25rem;
+}

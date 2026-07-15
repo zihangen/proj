@@ -39,8 +39,13 @@ export function FeedbackPanel({
           )}
           <ul className={styles.list}>
             {suggestions.map((s) => (
-              <li key={s.id} className={styles.card}>
-                <span className={styles.label}>{DIMENSION_LABELS[s.dimension]}</span>
+              <li
+                key={s.id}
+                className={s.dimension === "overall" ? styles.cardOverall : styles.card}
+              >
+                <span className={s.dimension === "overall" ? styles.labelOverall : styles.label}>
+                  {DIMENSION_LABELS[s.dimension]}
+                </span>
                 <p className={styles.note}>{s.note}</p>
               </li>
             ))}
