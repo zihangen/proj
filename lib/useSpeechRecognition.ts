@@ -20,6 +20,8 @@ interface UseSpeechRecognitionResult {
   clear: () => void;
 }
 
+const LANG_RESTART_FALLBACK_MS = 400;
+
 function getRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
   if (typeof window === "undefined") return null;
   return window.SpeechRecognition ?? window.webkitSpeechRecognition ?? null;
@@ -40,17 +42,39 @@ export function useSpeechRecognition({
   const langRef = useRef(lang);
   const onFinalChunkRef = useRef(onFinalChunk);
 
-  const pendingLangRestartRef = useRef(false);
+  // Restarting recognition after a language change is racy: Chrome doesn't
+  // always fire `onend` promptly (or at all) right after `abort()`. A
+  // generation counter lets us tell a stale restart apart from the latest
+  // one, and a fallback timer forces the restart through even if `onend`
+  // never shows up.
+  const langGenerationRef = useRef(0);
+  const pendingLangRestartGenRef = useRef<number | null>(null);
+  const restartOnEndRef = useRef<() => void>(() => {});
   const startRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const prevLang = langRef.current;
     langRef.current = lang;
     if (prevLang === lang) return;
-    if (shouldListenRef.current && recognitionRef.current) {
-      pendingLangRestartRef.current = true;
-      recognitionRef.current.abort();
-    }
+    if (!shouldListenRef.current || !recognitionRef.current) return;
+
+    const gen = ++langGenerationRef.current;
+    pendingLangRestartGenRef.current = gen;
+
+    const restart = () => {
+      if (pendingLangRestartGenRef.current !== gen) return;
+      pendingLangRestartGenRef.current = null;
+      recognitionRef.current = null;
+      if (shouldListenRef.current) startRef.current();
+    };
+
+    recognitionRef.current.abort();
+    const fallback = setTimeout(restart, LANG_RESTART_FALLBACK_MS);
+    // Stash so the `onend` handler (bound to the aborted instance) can
+    // trigger the same restart immediately instead of waiting for the timer.
+    restartOnEndRef.current = restart;
+
+    return () => clearTimeout(fallback);
   }, [lang]);
 
   useEffect(() => {
@@ -100,10 +124,8 @@ export function useSpeechRecognition({
     };
 
     recognition.onend = () => {
-      if (pendingLangRestartRef.current) {
-        pendingLangRestartRef.current = false;
-        recognitionRef.current = null;
-        if (shouldListenRef.current) startRef.current();
+      if (pendingLangRestartGenRef.current !== null) {
+        restartOnEndRef.current();
         return;
       }
       if (shouldListenRef.current) {
@@ -143,7 +165,9 @@ export function useSpeechRecognition({
 
   const stop = useCallback(() => {
     shouldListenRef.current = false;
-    recognitionRef.current?.stop();
+    pendingLangRestartGenRef.current = null;
+    recognitionRef.current?.abort();
+    recognitionRef.current = null;
     setListening(false);
     setInterimText("");
   }, []);
